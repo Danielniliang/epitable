@@ -4,12 +4,12 @@
 #                                                                          #
 #  Created by: Daniel Ni                                                   #
 #  Edited by: Daniel Ni                                                    #
-#  Last Modified on 3/25/2020                                              #
+#  Last Modified on 1/05/2021                                              #
 #                                                                          #
 ############################################################################
 
 ###########################Required packages######################
-#install.packages(c("pROC", "car","tableone", "effsize", "dplyr",'readxl',
+# install.packages(c("pROC", "car","tableone", "effsize", "dplyr",'readxl',
 #                   'readxl','writexl','ggplot2','arsenal','ModelGood'
 #                   ,'gmodels','e1071','rio','openxlsx','aod','DescTools'))
 #library(pROC)
@@ -44,6 +44,17 @@ toNA<-function(vi, list=c('.','MISSING','na',' ','')){
   return(vi)
 }
 
+# Count the items in a text field separated by certain pattern of string (For example, calculate number of medicine in the field of "Other illness")
+count_items <- function(df, var_name, seperate_by = " "){
+  var = as.character(df[,c(var_name)])
+  count = rep(0, length(var))
+  for (i in 1:length(var)) {
+    tmp = str_split(var[i], " ")[[1]]
+    print(tmp)
+    count[i] <- length(tmp[which(nchar(tmp) > 0)])
+  }
+  return(count)
+}
 
 ##Calculate N and N missing by group##
 N<-function(vi,group){
@@ -56,6 +67,21 @@ N<-function(vi,group){
     nmiss<-rbind(nmiss,"",tmp1)
   }
   return(nmiss)
+}
+
+## Change the length of the participant ID into 6 Character ##
+To_6Cs_ID<-function(idname, dt){
+  participant<-dt[,c(idname)]
+  for (i in 1:length(participant)) {
+    participant<-as.character(participant)
+    id<-participant[i]
+    if(nchar(id)==4){id<-paste(substr(id, 1,3), "00", substr(id, 4,nchar(id)), sep = "")}
+    if(nchar(id)==5){id<-paste(substr(id, 1,3), "0", substr(id, 4,nchar(id)), sep = "")}
+    if(nchar(id)==6){id=id}
+    participant[i]<-id
+  }
+  dt[,c(idname)]<-participant
+  return(dt)
 }
 
 ##Formating and Genrating Excel Table##
@@ -115,7 +141,7 @@ ExcelTable<-function(table,
   return(wb)
 }
 
-###########################Normality Test and Distribution Plots#############################
+########################### Normality Test and Distribution Plots #############################
 ##Desciption##
 #Function for generating a table for normality test and generate distribution plots
 
@@ -236,7 +262,7 @@ dist.plots<-function(dt,group,
 }
 
 
-###########################Demographic Characteristic Table###################################
+########################### Demographic Characteristic Table ###################################
 ##Desciption##
 #Function for generating demographic characteristic tables or Univariate analysis
 
@@ -267,7 +293,7 @@ DemoTable<-function(con=c(),
     da<-as.data.frame(cbind(data,group))
     gt<-group_by(da, group)
     group<-factor(group)
-    #Tables for mean ± SD, P by ANOVA
+    #Tables for mean Â± SD, P by ANOVA
     if(median==F){
       pval<-c()
       e<-c()
@@ -276,10 +302,10 @@ DemoTable<-function(con=c(),
         x=x+1
         sum <- summarize_at(gt,variable.names(data)[i],list(~mean(.,na.rm=T),~sd(.,na.rm=T)))
         mean_sd<-apply(as.matrix(sum)[,2:3], 2, as.numeric)
-        #tmp<-paste(round(mean_sd[,1],2),'±', round(mean_sd[,2],1),sep=" ")
-        m<-paste(format(round(mean_sd[,1],decimal),nsmall=decimal),'±', format(round(mean_sd[,2],decimal),nsmall = decimal),sep=" ")
-        #m1<-c(paste(round(mean(data[,i],na.rm = TRUE),2),'±', round(sd(data[,i],na.rm = TRUE),1),sep=" "),m)
-        m1<-c(paste(format(round(mean(data[,i],na.rm = TRUE),decimal), nsmall = decimal),'±', format(round(sd(data[,i],na.rm = TRUE),decimal),nsmall = decimal),sep=" "),m)
+        #tmp<-paste(round(mean_sd[,1],2),'Â±', round(mean_sd[,2],1),sep=" ")
+        m<-paste(format(round(mean_sd[,1],decimal),nsmall=decimal),'Â±', format(round(mean_sd[,2],decimal),nsmall = decimal),sep=" ")
+        #m1<-c(paste(round(mean(data[,i],na.rm = TRUE),2),'Â±', round(sd(data[,i],na.rm = TRUE),1),sep=" "),m)
+        m1<-c(paste(format(round(mean(data[,i],na.rm = TRUE),decimal), nsmall = decimal),'Â±', format(round(sd(data[,i],na.rm = TRUE),decimal),nsmall = decimal),sep=" "),m)
 
         e<-rbind(e,m1)
       #Calculate P value using t test or One way ANOVA
@@ -459,7 +485,7 @@ DemoTable<-function(con=c(),
       n<-c()
       for (i in 1:ncol(vi)) {
         tmp<-cbind.data.frame(is.na(vi[,i]),group)
-        tmp1<-table(tmp$`is.na(vi[, i])`,tmp$group)
+        tmp1<-table(tmp[,1],tmp[,2])
         n<-rbind(n,tmp1[1,])
       }
       rownames(n)<-colnames(vi)
@@ -508,7 +534,7 @@ DemoTable<-function(con=c(),
     table<-rbind(cbind(rownames(table),table),
                  c(
                    paste("Table 1. Values are presented as",
-                         ifelse(median,"Median (IQR)","Mean ± SD"),
+                         ifelse(median,"Median (IQR)","Mean Â± SD"),
                          "for continuous variables, and n (%) for categorical variables. P values were calculated with" ,
                          ifelse(median,
                                 ifelse(nlevels(group)!=2, "Kruskal Wallis Test One Way ANOVA","Mann-Whitney U test"),
@@ -531,7 +557,7 @@ DemoTable<-function(con=c(),
         table<-rbind(cbind(rownames(table),table),
                      c(
                        paste("Table 1. Values are presented as",
-                             ifelse(median,"Median (IQR).","Mean ± SD."),
+                             ifelse(median,"Median (IQR).","Mean Â± SD."),
                              "P values were calculated with" ,
                              ifelse(median,
                                     ifelse(nlevels(group)!=2, "Kruskal Wallis Test One Way ANOVA","Mann-Whitney U test"),
@@ -689,9 +715,9 @@ group.diff<-function(dt,group,
 
   if(median==F){
     result<-cbind(round(t(mean),2),result2)
-    result[,1:2]<-cbind(paste(result[,1], "±",round(sd[1,],2)),paste(result[,2], "±",round(sd[2,],2)))
+    result[,1:2]<-cbind(paste(result[,1], "Â±",round(sd[1,],2)),paste(result[,2], "Â±",round(sd[2,],2)))
     rownames(result)<-colnames(dt)
-    #colnames(result)<-c(paste(levels(group)[1],"(Mean ? SD)"),paste(levels(group)[2],"(Mean ? SD)"),"Mean Difference",
+    #colnames(result)<-c(paste(levels(group)[1],"(Mean Â± SD)"),paste(levels(group)[2],"(Mean Â± SD)"),"Mean Difference",
     #                    "CI Lower","CI Upper","statistics","P-value","cohen's D","CI Lower","CI Upper","Missing")
   }else{
     result<-cbind(round(t(Median),2),result2)
@@ -714,7 +740,7 @@ group.diff<-function(dt,group,
 
   #Naming columns:
   if(median==F){
-    colnames(result4)<-c("N",paste(levels(group)[1],"(Mean ± SD)"),"N",paste(levels(group)[2],"(Mean ± SD)"),"Mean Difference",
+    colnames(result4)<-c("N",paste(levels(group)[1],"(Mean Â± SD)"),"N",paste(levels(group)[2],"(Mean Â± SD)"),"Mean Difference",
                          "P-value","Cohen's D (CI)","N Missing","Total N")
   }else{
     colnames(result4)<-c("N",paste(levels(group)[1],"(Median (IQR))"),"N",paste(levels(group)[2],"(Median (IQR))"),
@@ -957,11 +983,11 @@ multivariate<-function(dt,
       }else{
         if(is.vector(temp1)==T){
           temp2<-t(rbind(c(0,"-"), 
-                         cbind(paste(round(as.numeric(temp1[1]),2),' ± ',round(as.numeric(temp1[2]),2),sep = ""),
+                         cbind(paste(round(as.numeric(temp1[1]),2),' Â± ',round(as.numeric(temp1[2]),2),sep = ""),
                                temp1[4])))
         }else{
           temp2<-t(rbind(c(0,"-"), 
-                         cbind(paste(round(as.numeric(temp1[,1]),2),' ± ',round(as.numeric(temp1[,2]),2),sep = ""),
+                         cbind(paste(round(as.numeric(temp1[,1]),2),' Â± ',round(as.numeric(temp1[,2]),2),sep = ""),
                                temp1[,4])))
         }
         if(nlevels(group)>2){
