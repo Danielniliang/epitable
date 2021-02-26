@@ -1,11 +1,11 @@
 
-##################################DISCIPTION################################
-#  Functions for data analysis for research projects at Dr.Hackney's Lab   #
-#                                                                          #
-#  Created by: Liang Ni                                                    #
-#  Edited by: Liang Ni                                                     #
-#  Last Modified on 1/05/2021                                              #
-#                                                                          #
+################################# DISCRIPTION ###############################
+#  Functions for data analysis for research projects at Dr.Hackney's Lab   
+#                                                                          
+#  Created by: Liang Ni                                                    
+#  Edited by: Liang Ni                                                     
+#  Last Modified on 1/05/2021                                              
+#                                                                          
 ############################################################################
 
 ###########################Required packages######################
