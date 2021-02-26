@@ -2,8 +2,8 @@
 ##################################DISCIPTION################################
 #  Functions for data analysis for research projects at Dr.Hackney's Lab   #
 #                                                                          #
-#  Created by: Daniel Ni                                                   #
-#  Edited by: Daniel Ni                                                    #
+#  Created by: Liang Ni                                                    #
+#  Edited by: Liang Ni                                                     #
 #  Last Modified on 1/05/2021                                              #
 #                                                                          #
 ############################################################################
@@ -12,7 +12,7 @@
 # install.packages(c("pROC", "car","tableone", "effsize", "dplyr",'readxl',
 #                   'readxl','writexl','ggplot2','arsenal','ModelGood'
 #                   ,'gmodels','e1071','rio','openxlsx','aod','DescTools'))
-#library(pROC)
+
 library(tableone)
 library(car)
 library(effsize)
